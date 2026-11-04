@@ -26,6 +26,14 @@ def main():
         check(gone not in js, f"{gone} is gone from app.js")
     check("function renderMaterials(" in js and '["materials", renderMaterials]' in js, "renderMaterials runs on each state")
     check(re.search(r'^const REPO_URL = "[^"]*";', js, re.M) is not None, "the repository link is one constant")
+    # the story timeline: its logic file loads before the page script, replaces the old phase card, ships in the exe
+    scripts = re.findall(r'<script src="([^"]+)"></script>', html)
+    check("timeline.js" in scripts and scripts.index("timeline.js") < scripts.index("app.js"), f"timeline.js loads before app.js ({scripts})")
+    check("function timelineCard(" in js and "function phaseCard(" not in js and "phaseTimeline(" in js,
+          "the Quests tab opens with the story timeline")
+    check('id="tl-spoilers"' in js and 'id="q-missable"' in js, "a spoiler switch for later phases and a missable filter")
+    spec = open(os.path.join(ROOT, "packaging", "tracker.spec"), encoding="utf-8").read()
+    check('"timeline.js"' in spec, "the exe bundles timeline.js")
     # the setup box doesn't redraw under the player's typing; once the folder is taken the field must let go,
     # or the build's progress would stay frozen on screen
     submit = re.search(r'post\("/api/setup/game-dir".*?\n  \}\);', js, re.S)

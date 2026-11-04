@@ -23,14 +23,16 @@ The game's own world map, with every dungeon and cave drawn beside it, and on it
   passed without looting (gold ring), or looted (small and grey). Chests holding weapons, armour or rings stand out.
 - **Collectibles**: all Seeker's Tokens and all 78 Golden Trove Beetles, with how many you have taken.
 - **Campsites and Riftstones**, the campsites you have found, and dungeon entrances.
-- **Quests**: where the quests in progress continue and where the ones you haven't started begin.
+- **Quests**: where the quests in progress continue and where the ones you haven't started begin. Quests you
+  haven't started that close at the end of your current story phase get an orange ring.
 - **Farming** (off by default): gathering spots with their yields, monster spawns with their drops, smiths and shops.
 
 And in the journal beside the map:
 
-- **Quests**: the story phase you are in and the **points of no return**: which quests the end of a main quest
-  closes, which of them you haven't finished, and when a quest becomes available. A banner warns while you are on a
-  quest whose end closes others, and while a timed quest is running.
+- **Quests**: a story timeline of the five **points of no return**. Under each one are the quests that close
+  there and how you stand on them: done, in progress, can start now, opens later, or missed. Later phases stay
+  hidden until you turn on spoilers, and the quest list can be narrowed to quests you can still miss. A banner warns
+  while you are on a quest whose end closes others, and while a timed quest is running.
 - **Unique gear**: every piece that exists only once or twice in the world, and where.
 - **Materials**: everything smiths use, how many you have, who drops it, who sells it, and where to gather it.
 - **Party**: you, your main pawn and hired pawns: vocations, ranks, skills, augments, what to learn next.

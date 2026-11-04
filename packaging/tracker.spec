@@ -12,7 +12,7 @@ import licences  # noqa: E402
 ROOT = os.path.abspath(os.path.join(SPECPATH, ".."))
 NAME = "DD2 Completionist Tracker"
 
-page = [(os.path.join(ROOT, "map", f), "map") for f in ("index.html", "app.js", "style.css")]
+page = [(os.path.join(ROOT, "map", f), "map") for f in ("index.html", "timeline.js", "app.js", "style.css")]
 page += [(p, os.path.join("map", "vendor")) for p in glob.glob(os.path.join(ROOT, "map", "vendor", "*"))]
 assets = [(os.path.join(ROOT, "assets", f), "assets") for f in ("rszdd2.json", "enumsdd2.json", "rszdd2_dlc.json",
                                                                  "enumsdd2_dlc.json")]

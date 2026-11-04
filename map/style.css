@@ -263,17 +263,31 @@ body.panel-closed .hl-chip { left: 50%; }
 .cutoff { color: #c4b79c; }
 .cutoff.near { color: #f2a65e; }
 .opens { color: var(--vellum-dim); }
-.phase-card { margin: 0 0 0.7rem; padding: 0.55rem 0.7rem; border-radius: 0.35rem; background: var(--night-raised); }
+.timeline { margin: 0 0 0.8rem; padding: 0.55rem 0.7rem; border-radius: 0.35rem; background: var(--night-raised); }
+.timeline > .sub { margin: 0.15rem 0 0.4rem; color: var(--vellum-dim); font-size: 0.9rem; }
+.tl-phases { list-style: none; margin: 0.3rem 0 0.4rem; padding: 0 0 0 0.9rem; border-left: 2px solid var(--line); }
+.tl-phase { position: relative; margin: 0 0 0.45rem; }
+.tl-phase::before { content: ""; position: absolute; left: calc(-0.9rem - 6px); top: 0.45rem; width: 10px; height: 10px; border-radius: 50%; background: var(--night); border: 2px solid var(--vellum-dim); }
+.tl-phase.past::before { background: var(--vellum-dim); }
+.tl-phase.now::before { background: var(--gold); border-color: var(--gold); }
+.tl-phase summary { cursor: pointer; line-height: 1.35; }
+.tl-phase.past summary { color: var(--vellum-dim); }
+.tl-here { margin-left: 0.3rem; padding: 0 0.35rem; border-radius: 0.25rem; background: var(--gold); color: #2a2117; font-size: 0.78rem; }
+.tl-end { display: block; font-size: 0.9rem; color: #f2a65e; }
+.tl-phase.past .tl-end { color: var(--vellum-dim); }
+.tl-tally { display: block; font-size: 0.84rem; color: var(--vellum-dim); }
+.tl-quests { list-style: none; margin: 0.3rem 0 0.2rem; padding: 0; }
+.tl-quests li { margin: 0.2rem 0; }
+.tl-quests .sub { display: inline; font-size: 0.84rem; color: var(--vellum-dim); }
+.tl-mark { display: inline-block; width: 1.1rem; color: var(--vellum-dim); }
+.tl-done .tl-mark { color: #9fd9a4; }
+.tl-active .tl-mark, .tl-active .sub { color: var(--gold); }
+.tl-open .tl-mark, .tl-open .sub { color: #f2a65e; }
+.tl-missed { color: var(--vellum-dim); }
+.tl-missed .tl-mark { color: #d9534f; }
+.tl-always summary { cursor: pointer; margin: 0.2rem 0 0.4rem; color: var(--vellum-dim); font-size: 0.92rem; }
+.seal.start.missable { border-color: #f2a65e; box-shadow: 0 0 0 2px #f2a65e; }
 .phase-head { margin: 0; font: 400 1.1rem/1.25 var(--font-map); }
-.phase-card > .sub { margin: 0.1rem 0 0; color: var(--vellum-dim); font-size: 0.9rem; }
-.cutoffs { margin: 0.35rem 0 0.2rem; padding-left: 1rem; }
-.cutoffs li { margin: 0.35rem 0; color: var(--vellum-dim); }
-.cutoffs li.near::marker { color: #f2a65e; }
-.cut-name { color: var(--vellum); }
-.cutoffs li.near .cut-name { color: #f2a65e; }
-.cutoffs .sub { display: inline; font-size: 0.86rem; color: var(--vellum-dim); }
-.cut-list { display: block; font-size: 0.9rem; }
-.phase-card summary { cursor: pointer; margin-top: 0.3rem; color: var(--vellum-dim); font-size: 0.92rem; }
 
 /* party: you and your pawns */
 .party-card { padding: 0 0 0.9rem; margin: 0 0 0.9rem; border-bottom: 1px solid var(--line); }
