@@ -26,6 +26,10 @@ def main():
         check(gone not in js, f"{gone} is gone from app.js")
     check("function renderMaterials(" in js and '["materials", renderMaterials]' in js, "renderMaterials runs on each state")
     check(re.search(r'^const REPO_URL = "[^"]*";', js, re.M) is not None, "the repository link is one constant")
+    # Norgan Ducats: a layer of their own; Nearby filters for Ducats and Wakestones
+    check('{ key: "ducat", label: "Norgan Ducats" }' in js, "a Norgan Ducats layer")
+    check('value="ducat"' in html and 'value="wakestone"' in html, "Nearby filters for Ducats and Wakestones")
+    check("function wakestoneSummary(" in js, "a Wakestone summary in the Nearby tab")
     # achievements: their own tab, drawn on every state, unlocked ones in the Log
     check('id="tab-ach"' in html and 'id="pane-ach"' in html and ">Achievements<" in html, "an Achievements tab")
     check('["achievements", renderAchievements]' in js and "Achievement unlocked:" in js, "achievements are drawn and logged")

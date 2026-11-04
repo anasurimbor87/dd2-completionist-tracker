@@ -38,7 +38,11 @@ reading the files; nothing is official.
 - **Golden Trove Beetles** (gimmick 161 = Gm82_080, item 398, +0.15 kg carry weight each): 78 placements in gather and
   item folders alike. Taken = `app.GatherContext._Num` (beetles left) is 0, read for beetle spots only since herbs
   and ore grow back. They are one-time pickups.
-- **Seeker's Tokens**: gimmick 167 (Gm82_036).
+- **Seeker's Tokens**: gimmick 167 (Gm82_036). A taken token has no pick-up flag; its id is in `_NeverGenerateIDs`.
+- **Norgan Ducats** (Dark Arisen, item 711): 140 placements of gimmick 894 (Gm83_169) in Norgan's field files, param 0.
+  Their gimmick data names no item, so the loot tables don't see them; they are collected by gimmick id, like the
+  beetles. Taken is read like a Seeker's Token (`_NeverGenerateIDs`); not yet confirmed on a save that has picked
+  Ducats up. Other Ducats come from Dark Arisen monsters, a shop, a quest reward and pickpocketing.
 - Dark Arisen proving-ground loot (`content\rdl_0nn`) is drawn only in its own proving ground (UI area 6000+nn).
 
 ## Quests

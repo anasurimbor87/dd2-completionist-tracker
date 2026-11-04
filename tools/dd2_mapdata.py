@@ -54,7 +54,9 @@ SPAWN_CLUSTER = 60.0  # world units: placements of one species closer than this 
 
 
 def _manualset_rows(gf, ex, reg):
-    npc, medals, gather, enemies, fires, beetles = {}, [], [], [], [], []
+    npc, medals, gather, enemies, fires = {}, [], [], [], []
+    special = {"beetle": [], "ducat": []}  # one-time pickups the loot tables don't describe
+    kinds = {dd2_loot.BEETLE_GIMMICK: "beetle", dd2_loot.DUCAT_GIMMICK: "ducat"}
     for name in gf.listed("appdata/generate/manualset/"):
         try:
             roots = ree_rsz.parse_user(dd2_loot._read_cached(gf, ex, name), reg)
@@ -75,15 +77,16 @@ def _manualset_rows(gf, ex, reg):
                                   "fire": r["_Container"]["_GimmickSetting"]["_ParamId"]})
                 if r["_GimmickID"] == SEEKERS_TOKEN:
                     medals.append({"id": uuid.UUID(r["_ManualSetGuid"]).bytes_le.hex(), "x": x, "y": y, "z": z, "file": path})
-                elif r["_GimmickID"] == dd2_loot.BEETLE_GIMMICK:  # in gather folders and item folders alike; one-time
-                    beetles.append({"id": uuid.UUID(r["_ManualSetGuid"]).bytes_le.hex(), "x": x, "y": y, "z": z, "file": path})
+                elif r["_GimmickID"] in kinds:  # in gather folders and item folders alike; one-time
+                    special[kinds[r["_GimmickID"]]].append({"id": uuid.UUID(r["_ManualSetGuid"]).bytes_le.hex(),
+                                                            "x": x, "y": y, "z": z, "file": path})
                 elif any(k in name for k in GATHER_FOLDERS):
                     gather.append({"g": r["_GimmickID"], "x": x, "y": y, "z": z, "file": path})
             for r in (t.get("_EnemySetInfo") or {}).get("_BasicRowDatas", []):
                 if r:
                     x, y, z = r["_ManualPos"]
                     enemies.append({"chara": r["_CharaID"], "x": x, "y": y, "z": z, "file": path})
-    return npc, medals, gather, enemies, fires, beetles
+    return npc, medals, gather, enemies, fires, special
 
 
 def _camp_order(fires):
@@ -330,7 +333,7 @@ def build_static(gf, reg, gd_dir, ex, floors=None, map_dir=None):
             named.add(i["name"])
             places.append({"name": i["name"], "x": i["x"] - r, "z": i["z"] - r, "w": 2 * r, "h": 2 * r,
                            "dungeon": False, "town": True})
-    npc, medals, gather_rows, enemy_rows, fires, beetles = _manualset_rows(gf, ex, reg)
+    npc, medals, gather_rows, enemy_rows, fires, special = _manualset_rows(gf, ex, reg)
     chara_names, yields, enemy_drops = j("chara_names"), j("gather_yields"), j("enemy_drops")
     gather = [dict(g, yields=yields[str(g["g"])], k=_gather_kind(yields[str(g["g"])], items))
               for g in gather_rows if str(g["g"]) in yields]
@@ -373,8 +376,10 @@ def build_static(gf, reg, gd_dir, ex, floors=None, map_dir=None):
         x, y, z = l["pos"]
         out_loot.append({"id": l["row_id"], "c": _category(l["gimmick"]), "g": l["gimmick"], "x": x, "y": y, "z": z,
                          "it": l["items"], "p": place_of(x, z, places), "file": l["file"]})
-    for b in beetles:  # loot of their own kind: looted state, rings, Hide looted, Nearby and Find all apply
-        out_loot.append(dict(b, c="beetle", g="gm82_080", it=[[BEETLE_ITEM, 1]], p=place_of(b["x"], b["z"], places)))
+    # loot of their own kinds: looted state, rings, Hide looted, Nearby and Find all apply
+    for kind, gimmick, item in (("beetle", "gm82_080", BEETLE_ITEM), ("ducat", "gm83_169", dd2_loot.DUCAT_ITEM)):
+        for b in special[kind]:
+            out_loot.append(dict(b, c=kind, g=gimmick, it=[[item, 1]], p=place_of(b["x"], b["z"], places)))
     for m in medals:
         m["p"] = place_of(m["x"], m["z"], places)
 

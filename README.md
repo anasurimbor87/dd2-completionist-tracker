@@ -21,7 +21,8 @@ The game's own world map, with every dungeon and cave drawn beside it, and on it
 
 - **Loot**: every chest, item on the ground and Dark Arisen cache, coloured by what your save says: not visited,
   passed without looting (gold ring), or looted (small and grey). Chests holding weapons, armour or rings stand out.
-- **Collectibles**: all Seeker's Tokens and all 78 Golden Trove Beetles, with how many you have taken.
+- **Collectibles**: all Seeker's Tokens, all 78 Golden Trove Beetles and Dark Arisen's 140 Norgan Ducats, with how
+  many you have taken. The chests and items of the Lost Rites proving grounds are on their own maps.
 - **Campsites and Riftstones**, the campsites you have found, and dungeon entrances.
 - **Quests**: where the quests in progress continue and where the ones you haven't started begin. Quests you
   haven't started that close at the end of your current story phase get an orange ring.
@@ -39,7 +40,8 @@ And in the journal beside the map:
 - **Unique gear**: every piece that exists only once or twice in the world, and where.
 - **Materials**: everything smiths use, how many you have, who drops it, who sells it, and where to gather it.
 - **Party**: you, your main pawn and hired pawns: vocations, ranks, skills, augments, what to learn next.
-- **Nearby**: the closest unlooted spots, campsite and Riftstone from where you last saved.
+- **Nearby**: the closest unlooted spots, campsite and Riftstone from where you last saved, filtered by kind
+  (chests, unique gear, Seeker's Tokens, beetles, Norgan Ducats, or Wakestones and their shards).
 - **Log**: what each game save changed: spots looted, quests started, finished or closed, items, levels and ranks.
 
 The map follows your game: a few seconds after each save it reads the new save by itself.

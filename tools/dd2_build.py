@@ -16,7 +16,7 @@ import ree_rsz
 STEPS = ["Reading game files", "Items and quests", "Map tiles", "Dungeon maps", "Map data"]
 # the shape of the built data; raise it whenever a change to the tools changes what the build writes, so every copy
 # built by an older tracker is built again on its next start (1: the first public version)
-DATA_FORMAT = 1
+DATA_FORMAT = 2  # 2: Norgan Ducats as loot of their own kind
 
 
 def _meta_path(data_dir):

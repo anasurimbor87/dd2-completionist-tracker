@@ -12,6 +12,9 @@ import ree_rsz
 CATALOGS = ["natives/stm/appsystem/catalog/maincontents/userdata/gimmickcatalogdata.user.3",
             "natives/stm/appsystem/catalog/maincontents/userdata/gimmickcatalogdata_contents_0014.user.3"]
 BEETLE_GIMMICK = 161  # Gm82_080: a Golden Trove Beetle (item 398), gathered once rather than picked up
+# Gm83_169: a Norgan Ducat (item 711) lying in Norgan; its gimmick data names no item, so build_loot doesn't see it.
+# Like a Seeker's Token it has no pick-up flag in the save: a taken one is listed in _NeverGenerateIDs.
+DUCAT_GIMMICK, DUCAT_ITEM = 894, 711
 
 
 def _read_cached(gf, ex, name):

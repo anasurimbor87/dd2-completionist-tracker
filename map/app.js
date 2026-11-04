@@ -1,7 +1,7 @@
 "use strict";
 
 const COLORS = { chest: "#d8a93b", gear: "#9d5fd0", item: "#3fa79a", dlc: "#b03a48", other: "#c98b5a", token: "#e9eef7",
-                 beetle: "#f4d43c", gather: "#8fb35a", spawn: "#8c2f3c" };
+                 beetle: "#f4d43c", ducat: "#e06aa8", gather: "#8fb35a", spawn: "#8c2f3c" };
 const BEETLE_ITEM = 398, BEETLE_KG = 0.15;  // the item's own text: eating one adds 0.15 kg of carry weight
 const FARM = new Set(["gather", "spawn"]); // regrowing / respawning: no looted state
 const SERVICE_LABEL = { smith: "Smith", dragonforge: "The Dragonforged", inn: "Inn", oxcart: "Oxcart", shop: "Shop" };
@@ -13,6 +13,7 @@ const LAYERS = [
   { key: "other", label: "Other containers" },
   { key: "token", label: "Seeker's Tokens" },
   { key: "beetle", label: "Golden Trove Beetles" },
+  { key: "ducat", label: "Norgan Ducats" },
   { key: "quest", label: "Quests in progress" },
   { key: "start", label: "Quests not started" },
   { key: "entrance", label: "Dungeon and cave entrances" },
@@ -62,6 +63,7 @@ const BADGE = {
   other: { fill: "#9a6438", draw: barrel },
   token: { fill: "#eef1f6", ink: "#25304a", draw: medal },
   beetle: { fill: "#f0cf3a", ink: "#3a2a08", draw: beetle },  // brighter than the chests' gold, with a dark symbol
+  ducat: { fill: "#d6488f", ink: "#ffffff", draw: ducat },  // raspberry: no other badge is pink; a coin with a crown
   herb: { fill: "#5d8a2e", draw: leaf },
   ore: { fill: "#5f7d8c", draw: gem },
   remains: { fill: "#8a7a5c", draw: bone },
@@ -107,6 +109,12 @@ function star(c, cx, cy, ro, ri) {
 function medal(c, ink, bg) {
   c.fillStyle = ink; c.beginPath(); c.arc(12, 12, 7.5, 0, 2 * Math.PI); c.fill();
   c.fillStyle = bg; star(c, 12, 12.4, 5, 2.1); c.fill();
+}
+function ducat(c, ink, bg) {
+  c.fillStyle = ink; c.beginPath(); c.arc(12, 12.5, 7.5, 0, 2 * Math.PI); c.fill();  // the coin
+  c.fillStyle = bg;
+  c.beginPath(); c.moveTo(7.5, 15.5); c.lineTo(7.5, 9.5); c.lineTo(9.8, 12); c.lineTo(12, 8.5); c.lineTo(14.2, 12);
+  c.lineTo(16.5, 9.5); c.lineTo(16.5, 15.5); c.closePath(); c.fill();  // a crown on it
 }
 function beetle(c, ink, bg) {
   c.strokeStyle = ink; c.lineWidth = 1.5; c.lineCap = "round";
@@ -239,7 +247,7 @@ function buildSprites() {
 function spriteUrl(key) { return SPRITES.url[key] ||= SPRITES.canvas[key].toDataURL(); }
 function iconMode() { return SPRITES.ready && map.getZoom() >= ICON_ZOOM; }
 function iconSize() { const z = map.getZoom(); return z >= 7 ? 32 : z >= 6 ? 28 : 24; }
-const LOOT_ICON = { chest: "chest", item: "item", dlc: "dlc", other: "other", token: "token", beetle: "beetle", spawn: "spawn" };
+const LOOT_ICON = { chest: "chest", item: "item", dlc: "dlc", other: "other", token: "token", beetle: "beetle", ducat: "ducat", spawn: "spawn" };
 function iconName(entry) {
   if (entry.c === "gather") return entry.k || "herb";
   return entry.c === "chest" && hasGear(entry) ? "gear" : LOOT_ICON[entry.c] || "other";
@@ -580,7 +588,7 @@ function applyFilters() {
 const layerState = { gather: false, spawn: false }; // thousands of markers: off until asked for
 function layerOn(key) { return layerState[key] !== false; }
 
-const LEGEND_ICON = { chest: "chest", item: "item", dlc: "dlc", other: "other", token: "token", beetle: "beetle", entrance: "entrance",
+const LEGEND_ICON = { chest: "chest", item: "item", dlc: "dlc", other: "other", token: "token", beetle: "beetle", ducat: "ducat", entrance: "entrance",
                       rest: "camp", service: "smith", gather: "herb", spawn: "spawn" };
 
 function renderLayers() {
@@ -620,6 +628,8 @@ function updateCounts() {
     $("count-beetle").innerHTML = `<b>${bt.looted}</b> of ${bt.total} taken${bt.seen ? `, ${bt.seen} passed` : ""}`
       + (uneaten ? `<span class="count-note">${uneaten} not eaten yet: +${+(uneaten * BEETLE_KG).toFixed(2)} kg carry weight</span>` : "");
   }
+  const du = tally.ducat;
+  if ($("count-ducat") && du) $("count-ducat").innerHTML = `<b>${du.looted}</b> of ${du.total} taken${du.seen ? `, ${du.seen} passed` : ""}`;
   if ($("count-service")) $("count-service").textContent = `${STATIC.services.length} places`;
   const camps = STATIC.rest.filter((r) => r.k === "camp").length;
   const found = STATIC.rest.filter((r) => r.k === "camp" && campFound(r)).length;
@@ -1152,6 +1162,18 @@ function lootSummary(entry) {
   return its.map(({ it, n }) => (it.gold ? `${n.toLocaleString()} gold` : it.n + (n > 1 ? ` ×${n}` : ""))).join(", ");
 }
 
+// Wakestones bring the dead back; three shards make one. Where the ones still out in the world lie
+const WAKESTONES = new Set([76, 77, 78]);  // Eternal Wakestone, Wakestone, Wakestone Shard
+function wakestoneSummary() {
+  const spots = markers.filter((m) => (m.entry.it || []).some(([i]) => WAKESTONES.has(i)));
+  const open = spots.filter((m) => STATE.loot[m.entry.id] !== "looted");
+  const left = {};
+  for (const m of open) for (const [i, n] of m.entry.it) if (WAKESTONES.has(i)) left[i] = (left[i] || 0) + n;
+  const parts = [[77, "Wakestone"], [78, "Wakestone Shard"], [76, "Eternal Wakestone"]]
+    .filter(([i]) => left[i]).map(([i, name]) => `${left[i]} ${name}${left[i] > 1 ? "s" : ""}`);
+  return `${spots.length - open.length} of ${spots.length} Wakestone spots looted${parts.length ? `. Still out there: ${parts.join(", ")}` : ""}.`;
+}
+
 function renderNearby() {
   const list = $("near-list");
   if (!STATE.player) {
@@ -1161,6 +1183,7 @@ function renderNearby() {
   }
   const [px, , pz] = STATE.player;
   renderNearRest(px, pz);
+  $("near-wake").innerHTML = document.querySelector('input[name="near"]:checked').value === "wakestone" ? wakestoneSummary() : "";
   const mode = document.querySelector('input[name="near"]:checked').value;
   const pick = (m) => {
     const e = m.entry;
@@ -1168,6 +1191,8 @@ function renderNearby() {
     if (mode === "unique") return hasUnique(e);
     if (mode === "token") return e.c === "token";
     if (mode === "beetle") return e.c === "beetle";
+    if (mode === "ducat") return e.c === "ducat";
+    if (mode === "wakestone") return (e.it || []).some(([i]) => WAKESTONES.has(i));
     return e.c !== "token";
   };
   const open = markers.filter((m) => !FARM.has(m.entry.c) && STATE.loot[m.entry.id] !== "looted");

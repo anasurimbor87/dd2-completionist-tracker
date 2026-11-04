@@ -17,7 +17,7 @@ def main():
     badges = set(re.findall(r"^\s+(\w+): \{ fill:", badge_block, re.M))
     loot = set(re.findall(r'"(\w+)"', re.search(r"const LOOT_ICON = \{([^}]*)\}", app).group(1)))  # the quoted values
     legend = set(re.findall(r'"(\w+)"', re.search(r"const LEGEND_ICON = \{([^}]*)\}", app).group(1)))
-    check(len(badges) >= 18 and len(loot) == 7, f"badges and loot icons read ({len(badges)} badges)")
+    check(len(badges) >= 19 and len(loot) == 8, f"badges and loot icons read ({len(badges)} badges, {len(loot)} loot icons)")
 
     needed = {
         "loot layers": loot,
@@ -29,7 +29,7 @@ def main():
         "chests with gear": {"gear"},
     }
     fills = dict(re.findall(r'^\s+(\w+): \{ fill: "(#[0-9a-f]{6})"', badge_block, re.M))
-    check(len({fills.get("chest"), fills.get("gear"), fills.get("dlc"), fills.get("beetle")}) == 4,
+    check(len({fills.get("chest"), fills.get("gear"), fills.get("dlc"), fills.get("beetle"), fills.get("ducat")}) == 5,
           f"chests, chests with gear, Dark Arisen caches and beetles differ in colour ({fills.get('chest')}, "
           f"{fills.get('gear')}, {fills.get('dlc')}, {fills.get('beetle')})")
     gear_chests = [e for e in static["loot"] if e["c"] == "chest"
