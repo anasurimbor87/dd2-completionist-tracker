@@ -42,6 +42,19 @@ def main():
     check("function timelineCard(" in js and "function phaseCard(" not in js and "phaseTimeline(" in js,
           "the Quests tab opens with the story timeline")
     check('id="tl-spoilers"' in js and 'id="q-missable"' in js, "a spoiler switch for later phases and a missable filter")
+    # the spoiler switch hides later main quests everywhere: in story names, in the quest list and on the map
+    check("function storyHidden(" in js and 'if (storyHidden(q)) return "a later story quest"' in js,
+          "story names of later phases are masked")
+    markers = re.search(r"function renderQuestMarkers\(\).*?\n\}", js, re.S)
+    qlist = re.search(r"function renderQuestList\(\).*?\n\}", js, re.S)
+    check(markers is not None and "storyHidden(id)" in markers.group(0), "the map leaves out later main quests")
+    check(qlist is not None and "storyHidden(id)" in qlist.group(0), "the quest list leaves out later main quests")
+    # each row names what really closes it; quests only other quests close have a group of their own
+    check("timelineRow(q, p.main)" in js and "Closed by other quests" in js, "rows name their own closers; a group for quests other quests close")
+    check("Orange ring:" in js, "the quest popup explains the orange ring")
+    nearby = re.search(r"function renderNearby\(\) \{.*?return;\n  \}", js, re.S)
+    check(nearby is not None and '$("near-wake").innerHTML = ""' in nearby.group(0), "without a position the Wakestone line is cleared too")
+    check("Steam's achievement files were not found" not in js, "the save-only achievements text doesn't claim Steam's files are missing")
     spec = open(os.path.join(ROOT, "packaging", "tracker.spec"), encoding="utf-8").read()
     check('"timeline.js"' in spec, "the exe bundles timeline.js")
     # the setup box doesn't redraw under the player's typing; once the folder is taken the field must let go,

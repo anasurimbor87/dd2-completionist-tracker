@@ -41,6 +41,13 @@ def main():
     check(dd2_session.diff(dd2_session.snapshot(older), dd2_session.snapshot(after)).get("achievements") == [],
           "a snapshot from before achievements were recorded logs none")
     check(not dd2_session._unchanged({"achievements": [[2, "Coin Collector"]]}), "a save that only unlocked an achievement is logged")
+    # Steam's list and the save's own flags differ: a switch between the two between saves is no unlock
+    from_save = dict(before, achievements_from="save")
+    from_steam = dict(after, achievements_from="steam")
+    check(dd2_session.diff(dd2_session.snapshot(from_save), dd2_session.snapshot(from_steam)).get("achievements") == [],
+          "achievements from another source than the last save's log none")
+    same = dd2_session.diff(dd2_session.snapshot(dict(before, achievements_from="steam")), dd2_session.snapshot(from_steam))
+    check(same.get("achievements") == [[2, "Coin Collector"]], "from the same source they are compared")
     check(not any(k.startswith("gear") for k in dd2_session.snapshot(newer)), "snapshots carry no worn-gear levels")
     with tempfile.TemporaryDirectory() as work:
         check(dd2_session.record(work, older) is None, "the first save only sets the starting point")

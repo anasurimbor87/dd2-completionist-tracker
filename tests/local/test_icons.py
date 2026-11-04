@@ -30,8 +30,8 @@ def main():
     }
     fills = dict(re.findall(r'^\s+(\w+): \{ fill: "(#[0-9a-f]{6})"', badge_block, re.M))
     check(len({fills.get("chest"), fills.get("gear"), fills.get("dlc"), fills.get("beetle"), fills.get("ducat")}) == 5,
-          f"chests, chests with gear, Dark Arisen caches and beetles differ in colour ({fills.get('chest')}, "
-          f"{fills.get('gear')}, {fills.get('dlc')}, {fills.get('beetle')})")
+          f"chests, chests with gear, Dark Arisen caches, beetles and Ducats differ in colour ({fills.get('chest')}, "
+          f"{fills.get('gear')}, {fills.get('dlc')}, {fills.get('beetle')}, {fills.get('ducat')})")
     gear_chests = [e for e in static["loot"] if e["c"] == "chest"
                    and any(static["items"].get(str(i), {}).get("gear") for i, _ in e["it"])]
     check(len(gear_chests) == 238, f"238 chests hold gear ({len(gear_chests)})")

@@ -79,6 +79,47 @@ def main():
         no_steam = {a["id"]: a for a in dd2_achievements.achievements(None, None, records)}
         check(no_steam[1]["unlocked"] and no_steam[1]["n"] == "Achievement 1" and no_steam[2]["count"] == 15,
               "without Steam's files: unlocks from the save and numbered names")
+
+        rows, source = dd2_achievements.for_state(steam, 12345678, records)
+        check(source == "steam" and len(rows) == 4, f"for the page: Steam's list when both files read ({source}, {len(rows)})")
+        rows, source = dd2_achievements.for_state(steam, 999, records)
+        check(source == "save" and rows[0]["n"] == "First Steps" and {r["id"] for r in rows if r["unlocked"]} == {1},
+              f"no stats for the account: Steam's names, the save's unlocks ({source})")
+
+        # a file cut off between two entries must not read as a shorter, complete file
+        whole = kv(STATS)
+        with open(os.path.join(stats, f"UserGameStats_12345678_{APP}.bin"), "wb") as f:
+            f.write(whole[:whole.index(b"\x002\x00\x02data")])
+        check(dd2_achievements.unlocked(steam, 12345678) is None, "a cut-off stats file is not read")
+        check(dd2_achievements.for_state(steam, 12345678, records)[1] == "save", "and the page falls back to the save")
+
+    # Steam files with an odd layout, and odd save records: never an error, the save still reads
+    odd_schemas = [{APP: "text"}, {APP: {"stats": "text"}}, {APP: {"stats": {"1": {"bits": "text"}}}},
+                   {APP: {"stats": {"1": {"bits": {"1": {"name": "1", "display": "text"}}}}}},
+                   {APP: {"stats": {"1": {"bits": {"1": {"name": "1", "display": {"name": 5, "desc": {"english": 7}}}}}}}}]
+    for odd in odd_schemas:
+        with tempfile.TemporaryDirectory() as steam:
+            stats = os.path.join(steam, "appcache", "stats")
+            os.makedirs(stats)
+            with open(os.path.join(stats, f"UserGameStatsSchema_{APP}.bin"), "wb") as f:
+                f.write(kv(odd))
+            with open(os.path.join(stats, f"UserGameStats_12345678_{APP}.bin"), "wb") as f:
+                f.write(kv({"cache": "text"}))
+            try:
+                rows, source = dd2_achievements.for_state(steam, 12345678, records)
+                ok = all(isinstance(r["n"], str) and isinstance(r["d"], str) for r in rows)
+            except Exception as e:  # noqa: BLE001
+                ok, source = False, repr(e)
+            check(ok, f"an odd Steam file reads without an error ({odd} -> {source})")
+    odd_records = {"app.GlobalUserDataManager.SaveData": {"SaveGameRecordDataList": [
+        {"_IsUnlock": True, "_Count": 3}, {"_RecordID": "7", "_IsUnlock": True}, "text",
+        {"_RecordID": 5, "_IsUnlock": False, "_Count": 2}]}}
+    try:
+        got = dd2_achievements.records(odd_records)
+    except Exception as e:  # noqa: BLE001
+        got = repr(e)
+    check(got == {5: [False, 2]}, f"save records without a number id are skipped ({got})")
+    check(dd2_achievements.records({"app.GlobalUserDataManager.SaveData": "text"}) == {}, "an odd record list reads as none")
     finish()
 
 

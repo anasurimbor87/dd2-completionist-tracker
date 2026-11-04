@@ -683,13 +683,14 @@ function renderQuestMarkers() {
     const s = STATE.quests[id];
     const progressing = questActive(id);
     const notStarted = !s && !questClosed(id);
-    if (!q.t) continue;  // untitled entries are hidden story steps
+    if (!q.t || storyHidden(id)) continue;  // hidden story steps, and main quests of later phases while those are hidden
     if ((progressing && !layerOn("quest")) || (notStarted && !layerOn("start")) || (!progressing && !notStarted)) continue;
+    const ring = notStarted && t && t.current != null && closesIn[id] === t.current;  // can close in the phase you're in
     for (const [x, z, text] of questDestinations(id)) {
       const size = progressing ? 22 : 14;
       const icon = L.divIcon({
         className: "", iconSize: [size, size], iconAnchor: [size / 2, size / 2],
-        html: `<div class="seal ${progressing ? "" : "start"}${notStarted && t && closesIn[id] === t.current ? " missable" : ""}">${timedNow(id) ? "⌛" : ""}</div>`,
+        html: `<div class="seal ${progressing ? "" : "start"}${ring ? " missable" : ""}">${timedNow(id) ? "⌛" : ""}</div>`,
       });
       const m = L.marker(ll(x, z), { icon, keyboard: true, title: q.t }).addTo(map);
       const task = questTask(id);
@@ -699,6 +700,7 @@ function renderQuestMarkers() {
         ${task && task.t ? `<p>${esc(task.t)}</p>` : ""}
         ${text ? `<p class="pop-state">${esc(text)}</p>` : ""}
         ${note ? `<p class="pop-state">${note}</p>` : ""}
+        ${ring ? '<p class="pop-state">Orange ring: you can miss this quest in the story phase you are in. The story timeline in the Quests tab says what closes it.</p>' : ""}
         <p class="pop-coords">x ${x.toFixed(0)}, z ${z.toFixed(0)}</p>`, { maxWidth: 320 });
       m.questId = id;
       questMarkers.push(m);
@@ -709,7 +711,8 @@ function renderQuestMarkers() {
 function renderQuestList() {
   // with the timeline's filter on: only quests a later story step can still close
   const entries = Object.entries(STATIC.quests)
-    .filter(([id, q]) => q.t && (!missableOnly || (unfinished(id) && pendingCutoffs(id).length > 0)));
+    .filter(([id, q]) => q.t && !storyHidden(id) && (!missableOnly || (unfinished(id) && pendingCutoffs(id).length > 0)));
+  const hidden = Object.entries(STATIC.quests).filter(([id, q]) => q.t && storyHidden(id)).length;
   const sections = [
     ["In progress", entries.filter(([id]) => questActive(id))],
     ["Not started yet", entries.filter(([id]) => !STATE.quests[id] && !questClosed(id))],
@@ -733,6 +736,7 @@ function renderQuestList() {
       }
     }
   }
+  if (hidden) html += `<p class="sub">${hidden} later story ${hidden === 1 ? "quest is" : "quests are"} hidden. Turn on "Show later phases" above to see ${hidden === 1 ? "it" : "them"}.</p>`;
   $("pane-quests").innerHTML = timelineCard() + (html || `<p>${missableOnly ? "No quest you can still miss." : "No quests found in this save."}</p>`);
   $("pane-quests").querySelectorAll("[data-quest]").forEach((b) => b.addEventListener("click", () => goToQuest(b.dataset.quest)));
   $("tl-spoilers")?.addEventListener("change", (ev) => {
@@ -779,7 +783,17 @@ function condHolds(c) {
 function questOpen(id) { const o = STATIC.quests[id]?.opens; return !o || condHolds(o); }
 function questClosed(id) { return !!(STATE.closed || {})[id]; }
 function storyOrder(q) { return STATIC.quests[q]?.o ?? 99; }
-function storyName(q) { return STATIC.quests[q]?.t || "a later story step"; }
+function storyName(q) {
+  if (storyHidden(q)) return "a later story quest";
+  return STATIC.quests[q]?.t || "a later story step";
+}
+// a main quest of a story phase after yours that you haven't started: hidden while "Show later phases" is off
+function storyHidden(q) {
+  return !STATE.quests[q] && questResult(q) < 0 && !laterPhasesShown()
+    && timelineLaterMain(STATIC.quests, STATIC.phases || [], currentPhase(), q);
+}
+// a quest that closed or failed before you finished it can't close other quests any more
+function closerGone(q) { const s = STATE.quests[q]; return s ? s.status === "Impossible" : questClosed(q); }
 function isPhase(q) { return (STATIC.phases || []).some(([p]) => p === q); }
 function orList(names) { return names.length < 2 ? names.join("") : `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}`; }
 // closed by finishing that quest (a phase quest ends with its main quest), not by one of its other outcomes
@@ -790,7 +804,7 @@ function pendingCutoffs(id) {
   const by = new Map();
   for (const e of STATIC.quests[id]?.ends || []) {
     const [q, r, shown] = e;
-    if (questResult(q) === r || shown === +id) continue;  // happened already, or one of the quest's own outcomes
+    if (questResult(q) === r || shown === +id || closerGone(shown)) continue;  // happened, own outcome, or can't happen
     by.set(shown, { q: shown, finish: byFinishing(e) && (by.get(shown)?.finish ?? true) });
   }
   return [...by.values()].sort((a, b) => storyOrder(a.q) - storyOrder(b.q));
@@ -868,13 +882,20 @@ function missablePhase(t) {
   return at;
 }
 const TL_STATE = {
-  done: ["✓", "done"], active: ["●", "in progress: finish it before this point"], open: ["○", "can start now"],
-  later: ["○", ""], missed: ["✕", "missed"],
+  done: ["✓", "done"], active: ["●", "in progress"], open: ["○", "can start now"], later: ["○", ""], missed: ["✕", "missed"],
+  passed: ["●", "started, but the story has moved past it: it may play out differently"],
 };
-function timelineRow(q) {
+// main: the main quest whose end is the point of no return the row is listed under (null outside the phases)
+function timelineRow(q, main) {
   const [mark, label] = TL_STATE[q.status];
-  const text = q.status === "later" ? `opens when you finish ${opensPhrase(STATIC.quests[q.id].opens)}` : label;
-  return `<li class="tl-${q.status}"><span class="tl-mark" aria-hidden="true">${mark}</span>${questLink(q.id)} <span class="sub">${text}</span></li>`;
+  const parts = [q.status === "later" ? `opens when you finish ${opensPhrase(STATIC.quests[q.id].opens)}` : label];
+  if (["open", "later", "active"].includes(q.status)) {
+    const pending = pendingCutoffs(q.id), other = pending.filter((e) => e.q !== main);
+    const verb = q.status === "active" ? "may change or end" : "closes";
+    if (other.length) parts.push(`${other.length < pending.length ? `also ${verb}` : verb} when ${cutoffPhrase(other)}`);
+    else if (q.status === "active" && main != null) parts[0] += ": finish it before this point";
+  }
+  return `<li class="tl-${q.status}"><span class="tl-mark" aria-hidden="true">${mark}</span>${questLink(q.id)} <span class="sub">${parts.join("; ")}</span></li>`;
 }
 function timelineCard() {
   if (!STATIC.phases?.length) return "";
@@ -884,23 +905,29 @@ function timelineCard() {
   let html = `<div class="timeline"><p class="phase-head">Story timeline</p>
     <p class="sub">${t.current == null ? "Your save doesn't say how far the story is yet." : cur >= t.phases.length
       ? "The story is complete: nothing closes any more." : `You are in phase ${cur + 1} of ${t.phases.length}.`}
-      Each phase ends at a point of no return: finishing that story quest closes the quests listed under it.</p>
+      Each phase ends at a point of no return: finishing that story quest closes the quests listed under it. Where a
+      quest closes some other way, its line says so.</p>
     <ol class="tl-phases">`;
   for (const p of t.phases) {
-    const past = p.index < cur, now = p.index === cur, hide = p.index > cur && !showLater;
+    const past = p.index < cur, now = t.current != null && p.index === cur, hide = p.index > cur && !showLater;
     const count = (st) => p.quests.filter((q) => st.includes(q.status)).length;
-    const open = count(["open", "later", "active"]), done = count(["done"]), missed = count(["missed"]);
-    const tally = [open && `${open} still open`, done && `${done} done`, missed && `${missed} missed`].filter(Boolean).join(", ") || "nothing closes here";
-    const end = hide ? "a later story quest" : esc(storyName(p.main));
-    html += `<li class="tl-phase${now ? " now" : past ? " past" : ""}"><details${now ? " open" : ""}>
+    const open = count(["open", "later", "active"]), done = count(["done"]), missed = count(["missed"]), passed = count(["passed"]);
+    const tally = [open && `${open} still open`, done && `${done} done`, passed && `${passed} overtaken by the story`,
+      missed && `${missed} missed`].filter(Boolean).join(", ") || "nothing closes here";
+    // the last phase ends with a story step that has no name in the quest log
+    const end = hide ? "finishing a later story quest" : STATIC.quests[p.main]?.t ? `finishing ${esc(storyName(p.main))}` : "the end of the story";
+    html += `<li class="tl-phase${now ? " now" : past ? " past" : ""}"><details${now || (t.current == null && p.index === 0) ? " open" : ""}>
       <summary><b>Phase ${p.index + 1}</b>${now ? ' <span class="tl-here">you are here</span>' : ""}
-        <span class="tl-end">Point of no return: finishing ${end}</span><span class="tl-tally">${tally}</span></summary>
+        <span class="tl-end">Point of no return: ${end}</span><span class="tl-tally">${tally}</span></summary>
       ${hide ? `<p class="sub">${p.quests.length} ${p.quests.length === 1 ? "quest closes" : "quests close"} here. Turn on "Show later phases" to see them.</p>`
-        : p.quests.length ? `<ul class="tl-quests">${p.quests.map(timelineRow).join("")}</ul>` : ""}
+        : p.quests.length ? `<ul class="tl-quests">${p.quests.map((q) => timelineRow(q, p.main)).join("")}</ul>` : ""}
     </details></li>`;
   }
   html += `</ol>
-    <details class="tl-always"><summary>Never closes (${t.always.length})</summary><ul class="tl-quests">${t.always.map(timelineRow).join("")}</ul></details>
+    ${t.side.length ? `<details class="tl-always"><summary>Closed by other quests (${t.side.length})</summary>
+      <p class="sub">No point of no return: each of these closes when you finish a certain other quest, or when it ends a certain way.</p>
+      <ul class="tl-quests">${t.side.map((q) => timelineRow(q, null)).join("")}</ul></details>` : ""}
+    <details class="tl-always"><summary>Never closes (${t.always.length})</summary><ul class="tl-quests">${t.always.map((q) => timelineRow(q, null)).join("")}</ul></details>
     <label class="check"><input type="checkbox" id="tl-spoilers"${showLater ? " checked" : ""}> Show later phases (story spoilers)</label>
     <label class="check"><input type="checkbox" id="q-missable"${missableOnly ? " checked" : ""}> In the list below, only quests that can still be missed</label></div>`;
   return html;
@@ -961,7 +988,7 @@ function renderAchievements() {
   const fromSave = STATE.achievements_from !== "steam";
   const section = (title, rows) => rows.length ? `<p class="group">${title} (${rows.length})</p><ul class="ach-list">${rows.map((a) => achievementRow(a, showHidden)).join("")}</ul>` : "";
   $("pane-ach").innerHTML = `<p class="phase-head">${fromSave ? `${unlocked.length} unlocked in this save` : `${unlocked.length} of ${list.length} unlocked`}</p>
-    <p class="sub">${fromSave ? "Unlocks as recorded in this save (Steam's achievement files were not found)." : "Unlocks for your Steam account; counts from your newest save."}</p>
+    <p class="sub">${fromSave ? "Unlocks as recorded in this save: Steam's achievement record for your account could not be read." : "Unlocks for your Steam account; counts from your newest save."}</p>
     <label class="check"><input type="checkbox" id="ach-hidden"${showHidden ? " checked" : ""}> Show hidden achievements (story spoilers)</label>
     ${section("Counting up", counting)}${section("Not unlocked yet", rest)}${section("Unlocked", unlocked)}`;
   $("ach-hidden").addEventListener("change", (ev) => {
@@ -1179,6 +1206,7 @@ function renderNearby() {
   if (!STATE.player) {
     list.innerHTML = '<li class="sub">The save has no position yet.</li>';
     $("near-rest").innerHTML = "";
+    $("near-wake").innerHTML = "";
     return;
   }
   const [px, , pz] = STATE.player;

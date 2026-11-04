@@ -22,7 +22,7 @@ def read_kv(path):
         return None
 
 
-def _kv(d, i):
+def _kv(d, i, nested=False):
     out = {}
     while i < len(d):
         t = d[i]
@@ -33,7 +33,7 @@ def _kv(d, i):
         name = d[i:j].decode("utf-8", "replace")
         i = j + 1
         if t == 0:
-            v, i = _kv(d, i)
+            v, i = _kv(d, i, True)
         elif t == 1:
             j = d.index(b"\0", i)
             v = d[i:j].decode("utf-8", "replace")
@@ -47,21 +47,27 @@ def _kv(d, i):
         else:
             raise ValueError(f"KeyValues type {t} at {i}")
         out[name] = v
+    if nested:  # the file ends inside a section: cut off (say, while Steam writes it), so not all of it is there
+        raise ValueError("KeyValues file cut off")
     return out, i
+
+
+def _dict(v):
+    """v when it is a section, else an empty one: Steam's files are read as found, whatever their layout"""
+    return v if isinstance(v, dict) else {}
 
 
 def _bits(schema_kv):
     """(stat block, bit, achievement dict) for every achievement of the schema"""
-    app = (schema_kv or {}).get(APPID) or {}
-    for block, stat in (app.get("stats") or {}).items():
-        if isinstance(stat, dict):
-            for bit, ach in (stat.get("bits") or {}).items():
-                if isinstance(ach, dict) and str(ach.get("name", "")).isdigit():
-                    yield block, bit, ach
+    for block, stat in _dict(_dict(_dict(schema_kv).get(APPID)).get("stats")).items():
+        for bit, ach in _dict(_dict(stat).get("bits")).items():
+            if isinstance(ach, dict) and str(ach.get("name", "")).isdigit():
+                yield block, bit, ach
 
 
 def _english(v):
-    return v.get("english", "") if isinstance(v, dict) else (v or "")
+    v = v.get("english", "") if isinstance(v, dict) else v
+    return v if isinstance(v, str) else ""
 
 
 def schema(steam):
@@ -73,7 +79,7 @@ def schema(steam):
         return None
     out = {}
     for _block, _bit, ach in _bits(kv):
-        disp = ach.get("display") or {}
+        disp = _dict(ach.get("display"))
         out[int(ach["name"])] = {"n": _english(disp.get("name")), "d": _english(disp.get("desc")),
                                  "hidden": str(disp.get("hidden", "0")) == "1"}
     return out or None
@@ -88,11 +94,11 @@ def unlocked(steam, account_id):
     sch = read_kv(os.path.join(stats_dir, f"UserGameStatsSchema_{APPID}.bin"))
     if kv is None or sch is None:
         return None
-    cache = kv.get("cache") or {}
+    cache = _dict(kv.get("cache"))
     out = {}
     for block, bit, ach in _bits(sch):
-        t = ((cache.get(block) or {}).get("AchievementTimes") or {}).get(bit)
-        if t:
+        t = _dict(_dict(cache.get(block)).get("AchievementTimes")).get(bit)
+        if isinstance(t, int) and t > 0:
             out[int(ach["name"])] = t
     return out
 
@@ -100,15 +106,19 @@ def unlocked(steam, account_id):
 def records(by_type):
     """{achievement id: [unlocked in this save, count]} from the save, for records with something in them"""
     out = {}
-    for r in (by_type.get(RECORDS) or {}).get("SaveGameRecordDataList") or []:
-        if isinstance(r, dict) and (r.get("_IsUnlock") or r.get("_Count")):
-            out[r["_RecordID"]] = [bool(r.get("_IsUnlock")), r.get("_Count") or 0]
+    rows = _dict(by_type.get(RECORDS)).get("SaveGameRecordDataList")
+    for r in rows if isinstance(rows, list) else []:
+        if not isinstance(r, dict) or type(r.get("_RecordID")) is not int:
+            continue
+        count = r.get("_Count") if type(r.get("_Count")) is int else 0
+        if r.get("_IsUnlock") or count:
+            out[r["_RecordID"]] = [bool(r.get("_IsUnlock")), count]
     return out
 
 
 def achievements(schema_map, times, save_records):
     """one row per achievement: id, n, d, hidden, unlocked, at (unix time or None), count, and goal when the text
-    names a number to reach ("Collected 80 Seeker's Tokens")"""
+    names a number to reach (like "Collected 80 test coins")"""
     ids = sorted(schema_map) if schema_map else sorted(i for i in save_records if i > 0)
     rows = []
     for i in ids:
@@ -122,3 +132,24 @@ def achievements(schema_map, times, save_records):
             row["goal"] = int(m.group(1))
         rows.append(row)
     return rows
+
+
+def for_state(steam, account_id, save_records):
+    """(rows, "steam" or "save") for the page: Steam's names, and Steam's unlocks when the account's stats read too;
+    otherwise the save's own unlock flags. Never raises: a Steam file it doesn't understand must not stop the save
+    from being read."""
+    try:
+        names = schema(steam)
+    except Exception:  # noqa: BLE001 - an odd schema: numbered names
+        names = None
+    try:
+        times = unlocked(steam, account_id) if names else None
+    except Exception:  # noqa: BLE001 - odd stats: the save's own flags
+        times = None
+    try:
+        return achievements(names, times, save_records), "steam" if names and times is not None else "save"
+    except Exception:  # noqa: BLE001
+        try:
+            return achievements(None, None, save_records), "save"
+        except Exception:  # noqa: BLE001
+            return [], "save"

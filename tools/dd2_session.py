@@ -28,6 +28,7 @@ def snapshot(state):
         "inventory": inventory, "party": party,
         "closed": {q: e[2] for q, e in state["closed"].items()} if "closed" in state else None,
         "achievements": sorted([a["id"], a["n"]] for a in state["achievements"] if a["unlocked"]) if "achievements" in state else None,
+        "achievements_from": state.get("achievements_from"),
     }
 
 
@@ -64,8 +65,10 @@ def _closed(older, newer):
 
 def _achievements(older, newer):
     """[[id, name], ...] of achievements unlocked since the older save; nothing if either snapshot is from before
-    achievements were recorded"""
+    achievements were recorded, or if one has Steam's unlocks and the other only the save's own"""
     if older.get("achievements") is None or newer.get("achievements") is None:
+        return []
+    if older.get("achievements_from") != newer.get("achievements_from"):  # Steam's list against the save's flags
         return []
     before = {a[0] for a in older["achievements"]}
     return [a for a in newer["achievements"] if a[0] not in before]

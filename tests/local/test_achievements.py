@@ -35,6 +35,9 @@ def main():
         check(counts == exp["counts"], f"{exp['slot']}: progress counts {exp['counts']} ({counts})")
         unlocked = sorted(i for i, r in records.items() if r[0])
         check(unlocked == exp["unlocked"], f"{exp['slot']}: achievements the save records as unlocked ({unlocked})")
+        # Steam's unlocks are the account's: they hold at least what one of its saves has unlocked
+        check(times is not None and set(exp["unlocked"]) <= set(times),
+              f"Steam's unlocks hold the save's ({sorted(set(exp['unlocked']) - set(times or {}))} missing)")
     finish()
 
 
