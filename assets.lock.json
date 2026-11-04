@@ -1,0 +1,20 @@
+{
+ "about": "Third-party data the tools read, pinned to upstream commits (dd2.py fetch-assets checks every SHA-256). Bump a pin only together with a rebuild check (docs/FORMAT.md).",
+ "files": [
+  {"name": "rszdd2.json", "repo": "kvasszn/ree-save-editor", "commit": "5ed1743172901a35103ccd91db22db23a7344486",
+   "path": "assets/dd2/rszdd2.json", "sha256": "ee4a062869084dc22d5e4332bafa0db8f520970b187ebf48fbb48858e105c336",
+   "licence": "GPL-3.0", "use": "pre-DLC type dump: field alignment for the save parser"},
+  {"name": "enumsdd2.json", "repo": "kvasszn/ree-save-editor", "commit": "5ed1743172901a35103ccd91db22db23a7344486",
+   "path": "assets/dd2/enumsdd2.json", "sha256": "60dbea04d24d8eb8d07d8216f3cb4fb1e594c4f8f41602be3483c7fbfae0f03f",
+   "licence": "GPL-3.0", "use": "pre-DLC enum names (quest ids, statuses)"},
+  {"name": "rszdd2_dlc.json", "repo": "seifhassine/REasy", "commit": "103397ac389babfb852558da682e69b44d16fe0c",
+   "path": "resources/data/dumps/rszdd2.json", "sha256": "15767d4e6887f20b95e4ac4e8991d34ff787336ad5071e7fb36cc29b9b8a751d",
+   "licence": "MIT", "use": "current type dump: class and field names of saves and game files"},
+  {"name": "enumsdd2_dlc.json", "repo": "seifhassine/REasy", "commit": "103397ac389babfb852558da682e69b44d16fe0c",
+   "path": "resources/data/enums/dd2_enums.json", "sha256": "a5b70ad205519f906cf59124e50ca5d447715c4671d9c6c3d0d79630dfcd8f24",
+   "licence": "MIT", "use": "current enum names"},
+  {"name": "lists/DD2_STM.list", "repo": "seifhassine/REasy", "commit": "955cfdcc90c4f621c367e31010a2c1e71326af3e",
+   "path": "resources/data/lists/DD2_STM.list", "sha256": "9cbab7dbaf3eb3a20c28cd7c83e8c6b3e025d16719cf0d4b736ae0d15912afe6",
+   "licence": "MIT", "use": "file names inside the game's PAK archives (this commit adds the Dark Arisen paths)"}
+ ]
+}

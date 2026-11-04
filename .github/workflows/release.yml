@@ -1,0 +1,35 @@
+# A version tag (v1.0.0, ...) builds the Windows program and publishes it as a GitHub Release: a ZIP of the one-folder
+# PyInstaller build (with the pinned third-party data) and its SHA-256. Built here, never on someone's PC.
+name: release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.14"
+      - run: python -m pip install -r requirements-build.txt
+      - run: python dd2.py fetch-assets
+      - run: python tests/run.py unit
+      - run: pyinstaller --noconfirm packaging/tracker.spec
+      - name: Zip and hash
+        shell: pwsh
+        run: |
+          $name = "DD2-Completionist-Tracker-$env:TAG"
+          Compress-Archive -Path "dist/DD2 Completionist Tracker" -DestinationPath "$name.zip"
+          $hash = (Get-FileHash "$name.zip" -Algorithm SHA256).Hash.ToLower()
+          "$hash  $name.zip" | Out-File -Encoding ascii "$name.zip.sha256"
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64  # v3.0.3
+        with:
+          files: |
+            DD2-Completionist-Tracker-*.zip
+            DD2-Completionist-Tracker-*.zip.sha256
+          generate_release_notes: true

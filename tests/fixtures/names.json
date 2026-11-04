@@ -1,0 +1,12 @@
+{
+ "0000a001": {"name": "test.RootSaveData", "fields": [{"name": "Records", "original_type": "Array", "align": 4}]},
+ "0000a002": {"name": "test.ItemSaveData", "fields": [
+  {"name": "_Count", "original_type": "S32", "align": 4},
+  {"name": "_Id", "original_type": "U32", "align": 4},
+  {"name": "_Name", "original_type": "String", "align": 4},
+  {"name": "_Flag", "original_type": "Boolean", "align": 1},
+  {"name": "_Child", "original_type": "Class", "align": 4},
+  {"name": "_Tags", "original_type": "Array", "align": 4}
+ ]},
+ "0000a003": {"name": "test.TagData", "fields": [{"name": "_Tag", "original_type": "U32", "align": 4}]}
+}

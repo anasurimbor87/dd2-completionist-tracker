@@ -1,0 +1,28 @@
+# Allowlist: everything is ignored unless re-included below. Game-derived data (tiles, dungeon maps, gamedata,
+# static.json, extracted files), third-party downloads (assets) and anything personal (work: saves, log, backups)
+# must never reach the repository; tools/check_publish.py guards the rest before each commit.
+/*
+!/.gitignore
+!/dd2.py
+!/tools/
+!/tests/
+!/docs/
+!/map/
+!/.github/
+!/packaging/
+!/*.cmd
+!/README.md
+!/LICENSE
+!/THIRD_PARTY_NOTICES.md
+!/CONTRIBUTING.md
+!/requirements.txt
+!/requirements-build.txt
+!/assets.lock.json
+
+# generated or personal, even inside the re-included folders
+/map/tiles/
+/map/dungeons/
+/map/data/
+/map/build/
+__pycache__/
+/tests/local/expectations.json

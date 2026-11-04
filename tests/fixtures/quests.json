@@ -1,0 +1,4 @@
+{
+ "log": [{"QuestId": 1, "StatusName": "Complete", "CurrentTaskIndex": 2}],
+ "contexts": [{"ID": 1, "ResultNo": 0}, {"ID": 11010, "ResultNo": 0}, {"ID": 2, "ResultNo": -1}]
+}

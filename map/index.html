@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DD2 Completionist Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=IM+Fell+English:ital@0;1&display=swap">
+<link rel="stylesheet" href="vendor/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<button id="panel-toggle" class="panel-toggle" aria-expanded="true" aria-controls="panel">Journal</button>
+<div id="hl-chip" class="hl-chip" hidden><span id="hl-text"></span> <button id="hl-clear" class="link">Clear</button></div>
+
+<aside id="panel" class="panel">
+  <header class="panel-head">
+    <h1>DD2 Completionist Tracker</h1>
+    <p id="save-line" class="save-line">Reading your save…</p>
+    <p id="live-line" class="live-line" role="status"></p>
+    <p id="account-line" class="account-line" hidden><label>Steam account <select id="account"></select></label></p>
+  </header>
+
+  <section id="setup" class="setup" aria-live="polite" hidden></section>
+  <section id="update-banner" class="timed-banner update-banner" hidden></section>
+
+  <section id="timed" class="timed-banner" aria-live="polite" hidden></section>
+  <section id="cutoff" class="timed-banner cutoff-banner" aria-live="polite" hidden></section>
+
+  <section class="block" aria-labelledby="layers-h">
+    <h2 id="layers-h">On the map</h2>
+    <ul id="layers" class="layers"></ul>
+    <label class="check"><input type="checkbox" id="hide-looted"> Hide what I've already looted</label>
+    <label class="check"><input type="checkbox" id="only-unique"> Only show unique gear</label>
+  </section>
+
+  <section class="block" aria-labelledby="find-h">
+    <h2 id="find-h">Find an item</h2>
+    <input id="find" type="search" placeholder="Stilettos, Wakestone, Ring of…" autocomplete="off">
+    <ol id="find-results" class="results"></ol>
+  </section>
+
+  <section class="block" aria-label="Journal">
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-quests" aria-selected="true" aria-controls="pane-quests">Quests</button>
+      <button role="tab" id="tab-gear" aria-selected="false" aria-controls="pane-gear">Unique gear</button>
+      <button role="tab" id="tab-mat" aria-selected="false" aria-controls="pane-mat">Materials</button>
+      <button role="tab" id="tab-party" aria-selected="false" aria-controls="pane-party">Party</button>
+      <button role="tab" id="tab-near" aria-selected="false" aria-controls="pane-near">Nearby</button>
+      <button role="tab" id="tab-log" aria-selected="false" aria-controls="pane-log">Log</button>
+    </div>
+    <div id="pane-mat" role="tabpanel" aria-labelledby="tab-mat" hidden>
+      <p class="sub">Everything smiths use, with how many you have. Pick one to see who drops it, who sells it and where to gather it.</p>
+      <input id="mat-find" type="search" placeholder="Filter materials" autocomplete="off" aria-label="Filter materials">
+      <div id="mat-list"></div>
+    </div>
+    <div id="pane-party" role="tabpanel" aria-labelledby="tab-party" hidden></div>
+    <div id="pane-near" role="tabpanel" aria-labelledby="tab-near" hidden>
+      <p id="near-rest" class="near-rest"></p>
+      <p class="sub">Closest unlooted spots to where you last saved, as the crow flies.</p>
+      <div class="near-filters">
+        <label class="check"><input type="radio" name="near" value="loot" checked> All loot</label>
+        <label class="check"><input type="radio" name="near" value="chest"> Chests</label>
+        <label class="check"><input type="radio" name="near" value="unique"> Unique gear</label>
+        <label class="check"><input type="radio" name="near" value="token"> Seeker's Tokens</label>
+        <label class="check"><input type="radio" name="near" value="beetle"> Beetles</label>
+      </div>
+      <ol id="near-list" class="results"></ol>
+    </div>
+    <div id="pane-log" role="tabpanel" aria-labelledby="tab-log" hidden></div>
+    <div id="pane-quests" role="tabpanel" aria-labelledby="tab-quests"></div>
+    <div id="pane-gear" role="tabpanel" aria-labelledby="tab-gear" hidden>
+      <label class="check"><input type="checkbox" id="gear-open" checked> Not looted yet</label>
+      <div id="gear-list"></div>
+    </div>
+  </section>
+
+  <section id="phone" class="block phone" aria-labelledby="phone-h">
+    <h2 id="phone-h">On your phone</h2>
+    <div id="phone-body"></div>
+  </section>
+
+  <footer class="panel-foot">
+    <p id="coords" class="coords" aria-live="off"></p>
+    <button id="refresh" class="refresh">Re-read save now</button>
+    <p class="foot-note">Vibe-coded fan project, not affiliated with Capcom.<span id="repo-link"></span></p>
+  </footer>
+</aside>
+
+<div id="map" aria-label="World map"></div>
+
+<script src="vendor/leaflet.js"></script>
+<script src="vendor/qrcode.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
