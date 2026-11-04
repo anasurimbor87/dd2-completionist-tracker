@@ -18,6 +18,7 @@ jobs:
         with:
           python-version: "3.14"
       - name: Release text from CHANGELOG.md (stops here if the version has no section)
+        shell: pwsh
         run: python tools/release_notes.py "$env:TAG" release-notes.md
       - run: python -m pip install -r requirements-build.txt
       - run: python dd2.py fetch-assets
