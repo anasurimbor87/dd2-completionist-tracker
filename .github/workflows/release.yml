@@ -1,5 +1,6 @@
 # A version tag (v1.0.0, ...) builds the Windows program and publishes it as a GitHub Release: a ZIP of the one-folder
-# PyInstaller build (with the pinned third-party data) and its SHA-256. Built here, never on someone's PC.
+# PyInstaller build (with the pinned third-party data) and its SHA-256, with the version's CHANGELOG.md section as
+# its text. Built here, never on someone's PC.
 name: release
 on:
   push:
@@ -16,6 +17,8 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: "3.14"
+      - name: Release text from CHANGELOG.md (stops here if the version has no section)
+        run: python tools/release_notes.py "$env:TAG" release-notes.md
       - run: python -m pip install -r requirements-build.txt
       - run: python dd2.py fetch-assets
       - run: python tests/run.py unit
@@ -32,4 +35,4 @@ jobs:
           files: |
             DD2-Completionist-Tracker-*.zip
             DD2-Completionist-Tracker-*.zip.sha256
-          generate_release_notes: true
+          body_path: release-notes.md

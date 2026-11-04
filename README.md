@@ -25,14 +25,16 @@ The game's own world map, with every dungeon and cave drawn beside it, and on it
   many you have taken. The chests and items of the Lost Rites proving grounds are on their own maps.
 - **Campsites and Riftstones**, the campsites you have found, and dungeon entrances.
 - **Quests**: where the quests in progress continue and where the ones you haven't started begin. Quests you
-  haven't started that close at the end of your current story phase get an orange ring.
+  haven't started that can close during your current story phase get an orange ring.
 - **Farming** (off by default): gathering spots with their yields, monster spawns with their drops, smiths and shops.
 
 And in the journal beside the map:
 
 - **Quests**: a story timeline of the five **points of no return**. Under each one are the quests that close
-  there and how you stand on them: done, in progress, can start now, opens later, or missed. Later phases stay
-  hidden until you turn on spoilers, and the quest list can be narrowed to quests you can still miss. A banner warns
+  there and how you stand on them: done, in progress, can start now, opens later, or missed. A quest that something
+  else closes sooner says what; quests that only another quest can close have a group of their own. Later phases,
+  and their main quests in the list and on the map, stay hidden until you turn on spoilers, and the quest list can be
+  narrowed to quests you can still miss. A banner warns
   while you are on a quest whose end closes others, and while a timed quest is running.
 - **Achievements**: all of the game's Steam achievements, which ones your account has unlocked and when, and
   progress bars from your save for the counting ones (Seeker's Tokens, people's affection, dungeons found), with a
@@ -70,6 +72,11 @@ reads the copy. Before reading a new save it keeps a backup of it in `work\backu
 
 **Where does it put its files?** Next to the program: `gamedata\`, `map\`, `extracted\` (built from your game) and
 `work\` (save copies, backups, the log). To remove the tracker, delete its folder.
+
+**How do I update to a new version?** Close the tracker's window. Unzip the new ZIP into the folder that holds your
+old **DD2 Completionist Tracker** folder (in "Extract all", change the destination to that folder) and let Windows
+replace the files. Your Log, save backups and settings are in that folder too, so they stay. What changed in each
+version is in [CHANGELOG.md](CHANGELOG.md).
 
 **The game was updated.** The page offers "Rebuild map data" when Steam reports a new game version. Until then the
 map keeps working with the old data.

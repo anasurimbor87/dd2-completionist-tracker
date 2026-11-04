@@ -44,5 +44,18 @@ exists. That file is ignored by git: keep your own there.
 
 ## Releases
 
-Push a tag `vX.Y.Z`. GitHub Actions (`.github/workflows/release.yml`) runs the unit tests, builds the one-folder exe
-with PyInstaller and publishes the ZIP with its SHA-256.
+First add the version's section to `CHANGELOG.md` (the [Keep a Changelog](https://keepachangelog.com/) layout:
+`## [X.Y.Z] - YYYY-MM-DD`, and its compare link at the bottom). It becomes the text of the GitHub Release, so write
+it for players, not for developers:
+
+- Start with one sentence on what the version is about, then **Highlights**: the two or three changes a player
+  will notice most.
+- Then **Added**, **Changed**, **Fixed** (and **Removed** when something goes): one line per change, saying what
+  the player sees or can do, not how the code does it. No file names, ids or function names.
+- End with **Good to know**: anything a player has to do or expect when updating (a map rebuild, a setting that
+  moved), and anything not yet tried on a real save.
+- No game text beyond names the tracker already shows, and no story spoilers.
+
+Then push a tag `vX.Y.Z`. GitHub Actions (`.github/workflows/release.yml`) takes that section as the release text
+(`tools/release_notes.py`; a tag without a section stops the release), runs the unit tests, builds the one-folder
+exe with PyInstaller and publishes the ZIP with its SHA-256.
