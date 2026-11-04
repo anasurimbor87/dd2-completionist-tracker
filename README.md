@@ -4,6 +4,10 @@ A completionist tracker for **Dragon's Dogma 2** on PC (Steam) that needs **no m
 never writes to them, and shows what you have found and what is left on a map in your browser: on the same PC, or on
 your phone next to the game.
 
+![The tracker's map around Vernworth: chests, items, Seeker's Tokens, Golden Trove Beetles, campsites and dungeon entrances, coloured by one player's save (grey = looted, gold ring = passed without looting), with the layer list and counts in the journal on the left](docs/screenshot.jpg)
+
+<sub>Map artwork © Capcom, read from the player's own installation.</sub>
+
 > **Vibe-coded project.** Almost all of this code was written by an AI coding assistant (Claude Code), directed and
 > play-tested by a human player. Not every line has been reviewed by a person. The tool only reads your saves and
 > never writes to them, but use it at your own risk.

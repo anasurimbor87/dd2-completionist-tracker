@@ -43,6 +43,21 @@ def main():
               "game file types and images are refused")
         check(any("big.bin" in p and "5 MB" in p for p in problems), "files over 5 MB are refused")
         check(check_publish.scan(["clean.py"], tmp, [], []) == [], "a clean file passes")
+
+        # the README's one screenshot is allowed, nothing else, and only while it stays small
+        os.makedirs(os.path.join(tmp, "docs"))
+        shot = os.path.join(tmp, "docs", "screenshot.jpg")
+        with open(shot, "wb") as f:
+            f.write(b"\xff\xd8" + b"\0" * 400_000)
+        check(check_publish.scan(["docs/screenshot.jpg"], tmp, [], []) == [], "the README screenshot is allowed")
+        with open(shot, "wb") as f:
+            f.write(b"\xff\xd8" + b"\0" * (1024 * 1024))
+        check(any("screenshot.jpg" in p for p in check_publish.scan(["docs/screenshot.jpg"], tmp, [], [])),
+              "a screenshot over 1 MB is refused")
+        other = os.path.join(tmp, "docs", "tile.jpg")
+        open(other, "wb").close()
+        check(any("tile.jpg" in p for p in check_publish.scan(["docs/tile.jpg"], tmp, [], [])),
+              "any other image is still refused")
         # Steam's userdata\0 (no account) or a short folder name would match any number in the code
         check(check_publish.usable_ids([0, 7, 12345678]) == [12345678], "only real account ids are searched for")
 

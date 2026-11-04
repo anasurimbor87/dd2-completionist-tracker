@@ -22,6 +22,7 @@ EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 EMAIL_OK = re.compile(r"(@users\.noreply\.github\.com|^noreply@anthropic\.com|@example\.(org|com|net))$", re.I)
 GAME_SUFFIXES = (".pak", ".user.3", ".scn.21", ".msg.24")
 IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".dds")
+ALLOWED_IMAGES = {"docs/screenshot.jpg": 1024 * 1024}  # the README's one screenshot, kept small; no other image
 
 
 def scan(paths, root, private, account_ids):
@@ -35,7 +36,11 @@ def scan(paths, root, private, account_ids):
             problems.append(f"{rel}: a game file type")
             continue
         if low.endswith(IMAGE_SUFFIXES):
-            problems.append(f"{rel}: an image (map images come from the game)")
+            limit = ALLOWED_IMAGES.get(rel.replace("\\", "/"))
+            if limit is None:
+                problems.append(f"{rel}: an image (map images come from the game)")
+            elif os.path.getsize(full) >= limit:
+                problems.append(f"{rel}: the README screenshot must stay under {limit // 1024} KB")
             continue
         try:
             size = os.path.getsize(full)
