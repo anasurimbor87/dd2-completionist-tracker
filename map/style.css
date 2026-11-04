@@ -286,6 +286,14 @@ body.panel-closed .hl-chip { left: 50%; }
 .tl-missed { color: var(--vellum-dim); }
 .tl-missed .tl-mark { color: #d9534f; }
 .tl-always summary { cursor: pointer; margin: 0.2rem 0 0.4rem; color: var(--vellum-dim); font-size: 0.92rem; }
+.ach-list { list-style: none; margin: 0.2rem 0 0.6rem; padding: 0; }
+.ach { margin: 0 0 0.55rem; }
+.ach .sub { display: block; font-size: 0.86rem; color: var(--vellum-dim); }
+.ach-name { display: block; }
+.ach-done .ach-name { color: #9fd9a4; }
+.ach-bar { display: flex; align-items: center; gap: 0.45rem; font-size: 0.86rem; color: var(--vellum-dim); }
+.ach-bar progress { width: 9rem; height: 0.55rem; accent-color: var(--gold); }
+.ach .link { font-size: 0.86rem; }
 .seal.start.missable { border-color: #f2a65e; box-shadow: 0 0 0 2px #f2a65e; }
 .phase-head { margin: 0; font: 400 1.1rem/1.25 var(--font-map); }
 

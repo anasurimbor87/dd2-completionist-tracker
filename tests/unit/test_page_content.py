@@ -26,6 +26,12 @@ def main():
         check(gone not in js, f"{gone} is gone from app.js")
     check("function renderMaterials(" in js and '["materials", renderMaterials]' in js, "renderMaterials runs on each state")
     check(re.search(r'^const REPO_URL = "[^"]*";', js, re.M) is not None, "the repository link is one constant")
+    # achievements: their own tab, drawn on every state, unlocked ones in the Log
+    check('id="tab-ach"' in html and 'id="pane-ach"' in html and ">Achievements<" in html, "an Achievements tab")
+    check('["achievements", renderAchievements]' in js and "Achievement unlocked:" in js, "achievements are drawn and logged")
+    check("STATE.achievements_from" in js, "the page knows whether the list came from Steam or only from the save")
+    server = open(os.path.join(ROOT, "tools", "dd2_server.py"), encoding="utf-8").read()
+    check('state["achievements_from"]' in server, "the server says where the achievements came from")
     # the story timeline: its logic file loads before the page script, replaces the old phase card, ships in the exe
     scripts = re.findall(r'<script src="([^"]+)"></script>', html)
     check("timeline.js" in scripts and scripts.index("timeline.js") < scripts.index("app.js"), f"timeline.js loads before app.js ({scripts})")

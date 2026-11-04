@@ -34,6 +34,13 @@ def main():
     check(d["looted"] == [SEEN] and d["gold"] == 250, f"diff: the newly looted spot and the gold change ({d['looted']}, {d['gold']})")
     check(dd2_session.same_run(dd2_session.snapshot(older), dd2_session.snapshot(newer)), "both saves are one playthrough")
     check("upgrades" not in d, "the Log no longer records smithing upgrades")
+    before = dict(older, achievements=[{"id": 1, "n": "First Steps", "unlocked": True}, {"id": 2, "n": "Coin Collector", "unlocked": False}])
+    after = dict(newer, achievements=[{"id": 1, "n": "First Steps", "unlocked": True}, {"id": 2, "n": "Coin Collector", "unlocked": True}])
+    a = dd2_session.diff(dd2_session.snapshot(before), dd2_session.snapshot(after))
+    check(a.get("achievements") == [[2, "Coin Collector"]], f"the Log names newly unlocked achievements ({a.get('achievements')})")
+    check(dd2_session.diff(dd2_session.snapshot(older), dd2_session.snapshot(after)).get("achievements") == [],
+          "a snapshot from before achievements were recorded logs none")
+    check(not dd2_session._unchanged({"achievements": [[2, "Coin Collector"]]}), "a save that only unlocked an achievement is logged")
     check(not any(k.startswith("gear") for k in dd2_session.snapshot(newer)), "snapshots carry no worn-gear levels")
     with tempfile.TemporaryDirectory() as work:
         check(dd2_session.record(work, older) is None, "the first save only sets the starting point")

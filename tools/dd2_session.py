@@ -27,6 +27,7 @@ def snapshot(state):
         "quests": {q: v["status"] for q, v in state.get("quests", {}).items()},
         "inventory": inventory, "party": party,
         "closed": {q: e[2] for q, e in state["closed"].items()} if "closed" in state else None,
+        "achievements": sorted([a["id"], a["n"]] for a in state["achievements"] if a["unlocked"]) if "achievements" in state else None,
     }
 
 
@@ -61,6 +62,15 @@ def _closed(older, newer):
     return [[event, fresh, started] for event, (fresh, started) in sorted(by_event.items())]
 
 
+def _achievements(older, newer):
+    """[[id, name], ...] of achievements unlocked since the older save; nothing if either snapshot is from before
+    achievements were recorded"""
+    if older.get("achievements") is None or newer.get("achievements") is None:
+        return []
+    before = {a[0] for a in older["achievements"]}
+    return [a for a in newer["achievements"] if a[0] not in before]
+
+
 def same_run(older, newer):
     """True if newer continues older's playthrough: completed quests stay completed and loot stays looted."""
     done = lambda s: {q for q, st in s["quests"].items() if st == "Complete"}
@@ -81,11 +91,11 @@ def diff(older, newer):
     return {"saved": newer["saved"], "prev_saved": older["saved"], "day": newer["day"],
             "days": (newer["day"] or 0) - (older["day"] or 0), "gold": newer["gold"] - older["gold"],
             "rift": newer["rift"] - older["rift"], "looted": looted, "quests": quests, "items": items,
-            "growth": _growth(older, newer), "closed": _closed(older, newer)}
+            "growth": _growth(older, newer), "closed": _closed(older, newer), "achievements": _achievements(older, newer)}
 
 
 def _unchanged(entry):
-    return not any(entry.get(k) for k in ("looted", "quests", "items", "growth", "closed", "gold", "rift",
+    return not any(entry.get(k) for k in ("looted", "quests", "items", "growth", "closed", "achievements", "gold", "rift",
                                           "days"))
 
 

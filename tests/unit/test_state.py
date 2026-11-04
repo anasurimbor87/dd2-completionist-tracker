@@ -20,6 +20,7 @@ def main():
     check(s["inventory"].get("10") == {"you": 2, "storage": 5} and s["inventory"].get("11") == {"main pawn": 1},
           f"items by owner ({s['inventory']})")
     check("gear" not in s and "equipped" not in s, "the state no longer carries worn gear")
+    check(s.get("records") == {1: [True, 0], 2: [False, 15]}, f"the save's achievement records ({s.get('records')})")
     check(dd2_mapdata.check_records(records, quests) is None, "the made-up save passes the record guard")
     check("results" not in dd2_mapdata.compute_state(records, dict(quests, contexts=[]), "x", "s"),
           "without quest contexts there are no results")

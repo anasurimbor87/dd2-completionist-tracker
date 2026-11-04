@@ -6,6 +6,7 @@ import re
 import struct
 import uuid
 
+import dd2_achievements
 import dd2_loot
 import dd2_map
 import dd2_parse
@@ -524,6 +525,7 @@ def compute_state(records, quest_json, saved_at, slot_name, vocations=None, ques
     words = camp.get("DiscoverBits") or []  # 64-bit words, bit n = campsite number n (see _camp_order)
     state["camps_found"] = [64 * w + b for w, word in enumerate(words) for b in range(64) if word >> b & 1]
     state["camp_last"] = camp.get("LastSleepIndex")
+    state["records"] = dd2_achievements.records(records)  # achievement progress and unlocks in this save
     if vocations:
         state["party"] = dd2_party.party(records, vocations)
     contexts = quest_json.get("contexts") or []

@@ -33,6 +33,9 @@ And in the journal beside the map:
   there and how you stand on them: done, in progress, can start now, opens later, or missed. Later phases stay
   hidden until you turn on spoilers, and the quest list can be narrowed to quests you can still miss. A banner warns
   while you are on a quest whose end closes others, and while a timed quest is running.
+- **Achievements**: all of the game's Steam achievements, which ones your account has unlocked and when, and
+  progress bars from your save for the counting ones (Seeker's Tokens, people's affection, dungeons found), with a
+  jump to the map layer that helps. Hidden story achievements stay hidden until you unlock or reveal them.
 - **Unique gear**: every piece that exists only once or twice in the world, and where.
 - **Materials**: everything smiths use, how many you have, who drops it, who sells it, and where to gather it.
 - **Party**: you, your main pawn and hired pawns: vocations, ranks, skills, augments, what to learn next.

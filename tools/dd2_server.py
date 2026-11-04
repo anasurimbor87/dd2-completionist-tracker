@@ -23,6 +23,7 @@ import webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, unquote, urlsplit
 
+import dd2_achievements
 import dd2_build
 import dd2_decrypt
 import dd2_mapdata
@@ -256,6 +257,11 @@ class Live:
         saved = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(mtime))
         state = dd2_mapdata.compute_state(by_type, quests, saved, os.path.basename(slot)[:-4], self.vocations,
                                           self.quest_tree)
+        # names from Steam's schema, unlocks for the whole account from Steam's stats (the save's own flags without them)
+        schema = dd2_achievements.schema(self.steam)
+        times = dd2_achievements.unlocked(self.steam, self.account_id)
+        state["achievements"] = dd2_achievements.achievements(schema, times, state["records"])
+        state["achievements_from"] = "steam" if schema and times is not None else "save"
         os.makedirs(self.log_dir, exist_ok=True)
         entry = dd2_session.record(self.log_dir, state)
         if entry:

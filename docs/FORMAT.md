@@ -60,6 +60,17 @@ reading the files; nothing is official.
   quest timers (`TimeManager.DetectionSaveData.QuestDatas`, 2880 units = 1 in-game day) also run for quests that
   haven't started, so they are not deadlines. The start day comes from the save log.
 
+## Achievements
+
+- The save has one record per achievement in `app.GlobalUserDataManager.SaveData.SaveGameRecordDataList`
+  (`_RecordID` = Steam's achievement id 1 to 60, `_IsUnlock`, `_Count` for the counting ones, `_ProgressBitFlag`).
+  `appsystem/gamerecord/userdata/gamerecordsettinguserdata.user.3` maps record ids to each platform's ids (on Steam
+  the same numbers). The game's own `message/ui/trophy.msg.24` is empty on PC.
+- Names, texts and the hidden flag come from Steam's local schema, `Steam/appcache/stats/UserGameStatsSchema_2054970.bin`
+  (binary KeyValues: stats blocks of 32 bits, each bit with `name` = the achievement id and `display`). The account's
+  unlocks are `UserGameStats_<account id>_2054970.bin`: `cache/<block>/AchievementTimes/<bit>` = unix time.
+- Goals of the counting achievements are the number in their text (80 Seeker's Tokens, 50 people, 50 dungeons).
+
 ## You and your pawns
 
 - Character records sit in `app.ContextDBMSSaveData`; `PlayerPersonalDataContext`, `MainPawnDataContext` and

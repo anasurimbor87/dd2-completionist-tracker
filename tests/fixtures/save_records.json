@@ -1,23 +1,166 @@
 [
- {"$type": "app.GameSystem.GameSaveData"},
- {"$type": "app.TimeManager.TimeSaveData", "Inside": {"InGameDay": 3}, "InGameElapsedSeconds": 7200},
- {"$type": "app.ItemManager.GameSaveData", "MoneySave": {"_Gold": 1000, "_Rim": 50}, "ItemStorageSaves": [
-  {"_ItemId": 10, "_Num": 2, "_CharaId": 2891076981, "_IsEquipped": false, "_EquipSlot": 0},
-  {"_ItemId": 10, "_Num": 5, "_CharaId": 65535, "_IsEquipped": false, "_EquipSlot": 0},
-  {"_ItemId": 11, "_Num": 1, "_CharaId": 2283028347, "_IsEquipped": true, "_EquipSlot": 2},
-  {"_ItemId": 0, "_Num": 0, "_CharaId": 2891076981, "_IsEquipped": false, "_EquipSlot": 0}
- ]},
- {"$type": "app.ContextDBMSSaveData", "DBSaveData": {"Records": [
-  {"Contexts": [{"$type": "app.UniqueIDContext", "UniqueID": {"_RowID": "a0000000000000000000000000000001"}},
-                {"$type": "app.GmItemContext", "_IsPick": true}]},
-  {"Contexts": [{"$type": "app.UniqueIDContext", "UniqueID": {"_RowID": "a0000000000000000000000000000003"}},
-                {"$type": "app.GmItemContext", "_IsPick": false}]},
-  {"Contexts": [{"$type": "app.UniqueIDContext", "UniqueID": {"_RowID": "a0000000000000000000000000000004"}},
-                {"$type": "app.GimmickContext", "_GimmickId": 161}, {"$type": "app.GatherContext", "_Num": 0}]},
-  {"Contexts": [{"$type": "app.UniqueIDContext", "UniqueID": {"_RowID": "a0000000000000000000000000000005"}},
-                {"$type": "app.GimmickContext", "_GimmickId": 5}, {"$type": "app.GatherContext", "_Num": 0}]},
-  {"Contexts": [null, {"$type": "app.PawnCountDataContext"}]}
- ]}},
- {"$type": "app.GenerateManager.GenerateSaveData2", "_NeverGenerateIDs": [{"_RowID": "a0000000000000000000000000000002"}]},
- {"$type": "app.CampSaveData", "DiscoverBits": [5], "LastSleepIndex": 2}
+ {
+  "$type": "app.GameSystem.GameSaveData"
+ },
+ {
+  "$type": "app.TimeManager.TimeSaveData",
+  "Inside": {
+   "InGameDay": 3
+  },
+  "InGameElapsedSeconds": 7200
+ },
+ {
+  "$type": "app.ItemManager.GameSaveData",
+  "MoneySave": {
+   "_Gold": 1000,
+   "_Rim": 50
+  },
+  "ItemStorageSaves": [
+   {
+    "_ItemId": 10,
+    "_Num": 2,
+    "_CharaId": 2891076981,
+    "_IsEquipped": false,
+    "_EquipSlot": 0
+   },
+   {
+    "_ItemId": 10,
+    "_Num": 5,
+    "_CharaId": 65535,
+    "_IsEquipped": false,
+    "_EquipSlot": 0
+   },
+   {
+    "_ItemId": 11,
+    "_Num": 1,
+    "_CharaId": 2283028347,
+    "_IsEquipped": true,
+    "_EquipSlot": 2
+   },
+   {
+    "_ItemId": 0,
+    "_Num": 0,
+    "_CharaId": 2891076981,
+    "_IsEquipped": false,
+    "_EquipSlot": 0
+   }
+  ]
+ },
+ {
+  "$type": "app.ContextDBMSSaveData",
+  "DBSaveData": {
+   "Records": [
+    {
+     "Contexts": [
+      {
+       "$type": "app.UniqueIDContext",
+       "UniqueID": {
+        "_RowID": "a0000000000000000000000000000001"
+       }
+      },
+      {
+       "$type": "app.GmItemContext",
+       "_IsPick": true
+      }
+     ]
+    },
+    {
+     "Contexts": [
+      {
+       "$type": "app.UniqueIDContext",
+       "UniqueID": {
+        "_RowID": "a0000000000000000000000000000003"
+       }
+      },
+      {
+       "$type": "app.GmItemContext",
+       "_IsPick": false
+      }
+     ]
+    },
+    {
+     "Contexts": [
+      {
+       "$type": "app.UniqueIDContext",
+       "UniqueID": {
+        "_RowID": "a0000000000000000000000000000004"
+       }
+      },
+      {
+       "$type": "app.GimmickContext",
+       "_GimmickId": 161
+      },
+      {
+       "$type": "app.GatherContext",
+       "_Num": 0
+      }
+     ]
+    },
+    {
+     "Contexts": [
+      {
+       "$type": "app.UniqueIDContext",
+       "UniqueID": {
+        "_RowID": "a0000000000000000000000000000005"
+       }
+      },
+      {
+       "$type": "app.GimmickContext",
+       "_GimmickId": 5
+      },
+      {
+       "$type": "app.GatherContext",
+       "_Num": 0
+      }
+     ]
+    },
+    {
+     "Contexts": [
+      null,
+      {
+       "$type": "app.PawnCountDataContext"
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "$type": "app.GenerateManager.GenerateSaveData2",
+  "_NeverGenerateIDs": [
+   {
+    "_RowID": "a0000000000000000000000000000002"
+   }
+  ]
+ },
+ {
+  "$type": "app.CampSaveData",
+  "DiscoverBits": [
+   5
+  ],
+  "LastSleepIndex": 2
+ },
+ {
+  "$type": "app.GlobalUserDataManager.SaveData",
+  "SaveGameRecordDataList": [
+   {
+    "_RecordID": 0,
+    "_IsUnlock": false,
+    "_Count": 0,
+    "_ProgressBitFlag": 0
+   },
+   {
+    "_RecordID": 1,
+    "_IsUnlock": true,
+    "_Count": 0,
+    "_ProgressBitFlag": 0
+   },
+   {
+    "_RecordID": 2,
+    "_IsUnlock": false,
+    "_Count": 15,
+    "_ProgressBitFlag": 0
+   }
+  ]
+ }
 ]

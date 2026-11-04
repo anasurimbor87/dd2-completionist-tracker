@@ -915,6 +915,62 @@ function renderCutoffs() {
   $("cutoff").querySelectorAll("[data-cutoff]").forEach((b) => b.addEventListener("click", () => goToQuest(b.dataset.cutoff)));
 }
 
+// ---------- achievements (dd2_achievements: Steam's schema and stats, progress counts from the save) ----------
+const ACH_KEY = "dd2.showHiddenAchievements";
+function hiddenAchievementsShown() { try { return localStorage.getItem(ACH_KEY) === "1"; } catch (e) { return false; } }
+// where an achievement is worked on: a map layer (with a Nearby filter for Seeker's Tokens) or the Party tab
+const ACH_LINKS = {
+  28: { layer: "token", near: "token", label: "Show Seeker's Tokens" },
+  46: { layer: "entrance", label: "Show dungeon entrances" },
+  14: { layer: "rest", label: "Show campsites" },
+};
+for (const id of [9, 10, 11, 12, 13, 23, 24, 25]) ACH_LINKS[id] = { tab: "tab-party", label: "Open the Party tab" };
+
+function achievementRow(a, showHidden) {
+  const secret = a.hidden && !a.unlocked && !showHidden;
+  const name = secret ? "Hidden achievement" : esc(a.n);
+  const text = secret ? "A story achievement: its name stays hidden until you unlock it." : esc(a.d);
+  const bar = a.goal ? `<span class="ach-bar"><progress max="${a.goal}" value="${a.unlocked ? a.goal : Math.min(a.count, a.goal)}"></progress>
+    ${a.unlocked ? a.goal : a.count} / ${a.goal}${a.unlocked ? "" : " in this save"}</span>` : "";
+  const when = a.unlocked && a.at ? `<span class="sub">Unlocked ${new Date(a.at * 1000).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}</span>` : "";
+  const link = !secret && !a.unlocked && ACH_LINKS[a.id] ? `<button class="link" data-ach="${a.id}">${ACH_LINKS[a.id].label}</button>` : "";
+  return `<li class="ach${a.unlocked ? " ach-done" : ""}"><span class="ach-name">${a.unlocked ? '<span aria-hidden="true">✓ </span>' : ""}${name}</span>
+    <span class="sub">${text}</span>${bar}${when}${link}</li>`;
+}
+
+function renderAchievements() {
+  const list = STATE.achievements || [];
+  if (!list.length) {
+    $("pane-ach").innerHTML = '<p class="sub">No achievement data yet: the tracker reads it from your newest save and from Steam.</p>';
+    return;
+  }
+  const showHidden = hiddenAchievementsShown();
+  const unlocked = list.filter((a) => a.unlocked).sort((a, b) => (b.at || 0) - (a.at || 0));
+  const counting = list.filter((a) => !a.unlocked && a.goal).sort((a, b) => b.count / b.goal - a.count / a.goal);
+  const rest = list.filter((a) => !a.unlocked && !a.goal);
+  const fromSave = STATE.achievements_from !== "steam";
+  const section = (title, rows) => rows.length ? `<p class="group">${title} (${rows.length})</p><ul class="ach-list">${rows.map((a) => achievementRow(a, showHidden)).join("")}</ul>` : "";
+  $("pane-ach").innerHTML = `<p class="phase-head">${fromSave ? `${unlocked.length} unlocked in this save` : `${unlocked.length} of ${list.length} unlocked`}</p>
+    <p class="sub">${fromSave ? "Unlocks as recorded in this save (Steam's achievement files were not found)." : "Unlocks for your Steam account; counts from your newest save."}</p>
+    <label class="check"><input type="checkbox" id="ach-hidden"${showHidden ? " checked" : ""}> Show hidden achievements (story spoilers)</label>
+    ${section("Counting up", counting)}${section("Not unlocked yet", rest)}${section("Unlocked", unlocked)}`;
+  $("ach-hidden").addEventListener("change", (ev) => {
+    try { localStorage.setItem(ACH_KEY, ev.target.checked ? "1" : "0"); } catch (e) { /* private window: not remembered */ }
+    renderAchievements();
+  });
+  $("pane-ach").querySelectorAll("[data-ach]").forEach((b) => b.addEventListener("click", () => {
+    const go = ACH_LINKS[+b.dataset.ach];
+    if (go.tab) { $(go.tab).click(); return; }
+    if (!layerOn(go.layer)) { layerState[go.layer] = true; renderLayers(); applyFilters(); }
+    if (go.near) {
+      const radio = document.querySelector(`input[name="near"][value="${go.near}"]`);
+      if (radio) { radio.checked = true; renderNearby(); }
+      $("tab-near").click();
+    }
+    showMap();
+  }));
+}
+
 // ---------- unique gear ----------
 function renderGear() {
   const openOnly = $("gear-open").checked;
@@ -1138,7 +1194,7 @@ function logEntryHtml(e, i) {
   const when = e.saved ? new Date(e.saved.replace(" ", "T")).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "Unknown time";
   if (e.new_run) return `<div class="log-entry"><p class="up-head">${when}</p><p class="sub">A different playthrough starts here.</p></div>`;
   if (e.reloaded) return `<div class="log-entry"><p class="up-head">${when}</p><p class="sub">An earlier save of this playthrough was loaded (back to day ${esc(e.day)}). The entries below happened in the save you left.</p></div>`;
-  e = Object.assign({ looted: [], quests: [], items: {}, growth: [], closed: [] }, e);
+  e = Object.assign({ looted: [], quests: [], items: {}, growth: [], closed: [], achievements: [] }, e);
   const lines = [];
   if (e.looted.length) {
     const lootMarkers = markers.filter((m) => e.looted.includes(m.entry.id));
@@ -1156,6 +1212,7 @@ function logEntryHtml(e, i) {
     if (names(started)) lines.push(`${esc(storyName(ev))} is over, these may play out differently now: ${names(started)}`);
   }
   const pawnName = esc((STATE.party || []).find((m) => m.who === "main pawn")?.name || "Your pawn");
+  for (const [, name] of e.achievements) lines.push(`Achievement unlocked: ${esc(name)}`);
   for (const g of e.growth || []) {
     const say = (verb, rest) => (g[0] === "you" ? verb[0].toUpperCase() + verb.slice(1) : `${pawnName} ${verb}`) + " " + rest;
     if (g[1] === "level") lines.push(say("reached", `level ${g[3]}`));
@@ -1326,7 +1383,7 @@ function applyState(next, animate) {
   const failed = [];
   for (const [name, fn] of [["save line", describeSave], ["map", applyFilters], ["quest seals", renderQuestMarkers],
     ["campsites", restyleCamps], ["quests", renderQuestList], ["timed quests", renderTimed], ["cutoffs", renderCutoffs], ["unique gear", renderGear],
-    ["materials", renderMaterials], ["party", renderParty], ["nearby", renderNearby], ["search", () => renderFind(false)],
+    ["materials", renderMaterials], ["achievements", renderAchievements], ["party", renderParty], ["nearby", renderNearby], ["search", () => renderFind(false)],
     ["log", loadLog]]) {
     try { fn(); } catch (e) { console.error(name, e); failed.push(name); }
   }
@@ -1387,7 +1444,7 @@ $("gear-open").addEventListener("change", renderGear);
 $("mat-find").addEventListener("input", renderMaterials);
 if (REPO_URL) $("repo-link").innerHTML = ` <a href="${esc(REPO_URL)}" target="_blank" rel="noopener">Source code</a>`;
 $("find").addEventListener("input", () => renderFind(true));
-const TABS = [["tab-quests", "pane-quests"], ["tab-gear", "pane-gear"], ["tab-mat", "pane-mat"], ["tab-party", "pane-party"], ["tab-near", "pane-near"], ["tab-log", "pane-log"]];
+const TABS = [["tab-quests", "pane-quests"], ["tab-ach", "pane-ach"], ["tab-gear", "pane-gear"], ["tab-mat", "pane-mat"], ["tab-party", "pane-party"], ["tab-near", "pane-near"], ["tab-log", "pane-log"]];
 for (const [tab, pane] of TABS) {
   $(tab).addEventListener("click", () => {
     for (const [t, p] of TABS) {
